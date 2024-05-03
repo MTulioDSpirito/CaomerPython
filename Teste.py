@@ -2,30 +2,28 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 # Crie o engine de conexão com o banco de dados
-engine = create_engine('sqlite:///meu_banco_de_dados.db')  # Substitua por sua string de conexão
+engine = create_engine('mysql+pymysql://root:@localhost:3306/mycaomer')
 
 # Carregue os arquivos do Excel em DataFrames
 df1 = pd.read_excel('animais.xlsx')
 df2 = pd.read_excel('Cadastro.xlsx')
 df3 = pd.read_excel('Saída.xlsx')
 
-#print(df2)
-
 # Selecione as colunas desejadas
-df1 = df1[['Nome2', 'Sexo','Espécie']]  # Substitua pelos nomes das colunas desejadas
-df2 = df2[['nome','CPF']]  # Substitua pelos nomes das colunas desejadas
-df3 = df3[['ID', 'Datadasaída', 'Evento de saída' , 'ID do tutor' , 'ID do animal', 'Descrição do óbito'   ]]  # Substitua pelos nomes das colunas desejadas
+df1 = df1[['Nome2', 'Sexo', 'Espécie', 'Idade estimada']]
+df2 = df2[['nome', 'CPF']]
+df3 = df3[['ID', 'ID do animal', 'ID do tutor', 'Evento de saída', 'Datadasaída']]
 
- #Concatene os dataframes
-df_total = pd.concat([df1, df2, df3], axis=1)
+# Renomeie as colunas para corresponder aos nomes desejados na tabela final
+df1.columns = ['nome_animal', 'sexo', 'especie', 'idade estimada']
+df2.columns = ['nome_tutor', 'CPF']
+df3.columns = ['ID', 'ID_animal', 'ID_tutor', 'Evento de saída', 'Datadasaída']
 
-print(df3)
+# Concatene os dataframes
+df_total = pd.concat([df3, df1, df2], axis=1)
 
-# Crie o engine de conexão com o banco de dados MySQL
-# Substitua 'your_database' pelo nome do seu banco de dados
-engine = create_engine('mysql+pymysql://root:@localhost:3306/mycaomer')
+# Reordene as colunas para a ordem desejada
+df_total = df_total[['ID', 'ID_animal', 'nome_animal', 'sexo', 'especie', 'idade estimada', 'ID_tutor', 'nome_tutor', 'CPF', 'Evento de saída', 'Datadasaída']]
 
 # Carregue o DataFrame na tabela SQL
-# Substitua 'sua_tabela' pelo nome da tabela que você deseja criar ou atualizar
-df_total.to_sql('tabela_nova3', con=engine, if_exists='replace', index=False)
-
+df_total.to_sql('tabela_fato', con=engine, if_exists='replace', index=False)
